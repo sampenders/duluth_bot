@@ -138,6 +138,8 @@ def get_metadata(url):
             metadata.update({'permis':'University of Minnesota Duluth, Kathryn A. Martin Library'})
         elif 'irrc' in url:
             metadata.update({'permis':'Iron Range Research Center'})
+        elif 'msn' in url:
+            metadata.update({'permis':'Minnesota Streetcar Museum'})
         metadata.update({'id':t['response']['document']['id'].split(':')[1]})
         
         # get description
@@ -214,7 +216,7 @@ def create_send_post(collection, photo_id):
     api = tweepy.API(auth)
 
     # images we'll be pulling
-    if collection == 'nemhc' or collection == 'irrc':
+    if collection in ['nemhc', 'irrc', 'msn']:
         full_url = 'https://cdm16022.contentdm.oclc.org/digital/iiif/' + collection + '/' + str(photo_id) + '/full/800,800/0/default.jpg'
         metadata_url = 'https://collection.mndigital.org/catalog/' + collection + ':' + str(photo_id) + '.json'
 
@@ -311,44 +313,37 @@ if __name__ == '__main__':
 
     time = datetime.datetime.now()
 
-    # coll18 is really old photos, coll1 is glanton photos, coll 175 is university archives
-    collections = ['nemhc', 'irrc']
-    weights = [10, 5]
+    collections = ['nemhc', 'irrc', 'msn']
+    weights = [4, 3, 1]
 
     # open connection to photo database
     db = photoDB('photoDB.db')
 
-    sum_weights = 0
-    for i in weights: sum_weights+=i
+    # try until a photo is found and posted
+    tries = 0
+    posted = False
+    while posted == False and tries < 10:
 
-    if time.hour >= 8 and time.hour <= 22:
+        # randomly choose collection based on weights given
+        coll = choose_collection(weights)
 
-        # try until a photo is found and posted
-        tries = 0
-        posted = False
-        while posted == False and tries < 10:
+        # randomly choose photo in collection
+        # if = -1, then there are no records left
+        photo_idx = db.get_random_row(collections[coll])
+        
+        #photo_idx = randint(1,max_idx[coll]) 
+        if int(photo_idx) != -1:
+            posted = create_send_post(collections[coll], str(photo_idx))
 
-            # randomly choose collection based on weights given
-            coll = choose_collection(weights)
+            # update database with whether this was posted or not
+            if posted == False:
+                db.update_row_status(time.strftime('%d/%m/%y %H:%M:%S'), collections[coll] + '_' + str(photo_idx), 1)
+            else:
+                db.update_row_status(time.strftime('%d/%m/%y %H:%M:%S'), collections[coll] + '_' + str(photo_idx), 0)
 
-            # randomly choose photo in collection
-            # if = -1, then there are no records left
-            photo_idx = db.get_random_row(collections[coll])
-            
-            #photo_idx = randint(1,max_idx[coll]) 
-            if int(photo_idx) != -1:
-                posted = create_send_post(collections[coll], str(photo_idx))
+                f = open('post_log.txt','a')
+                f.write(time.strftime('%d/%m/%y %H:%M:%S') + ',' + collections[coll] + ',' + str(photo_idx) + '\n')
+                f.close()
 
-                # update database with whether this was posted or not
-                if posted == False:
-                    db.update_row_status(time.strftime('%d/%m/%y %H:%M:%S'), collections[coll] + '_' + str(photo_idx), 1)
-                else:
-                    db.update_row_status(time.strftime('%d/%m/%y %H:%M:%S'), collections[coll] + '_' + str(photo_idx), 0)
-
-                tries += 1
-
-        f = open('post_log.txt','a')
-        f.write(time.strftime('%d/%m/%y %H:%M:%S') + ',' + collections[coll] + ',' + str(photo_idx) + '\n')
-        f.close()
-
+            tries += 1
 
