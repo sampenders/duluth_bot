@@ -346,4 +346,4 @@ if __name__ == '__main__':
                 f.close()
 
             tries += 1
-
+    db.con.close()
