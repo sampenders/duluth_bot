@@ -217,14 +217,14 @@ def create_send_post(collection, photo_id):
 
     # images we'll be pulling
     if collection in ['nemhc', 'irrc', 'msn']:
-        full_url = 'https://cdm16022.contentdm.oclc.org/digital/iiif/' + collection + '/' + str(photo_id) + '/full/800,800/0/default.jpg'
+        full_url = 'https://cdm16022.contentdm.oclc.org/digital/iiif/' + collection + '/' + str(photo_id) + '/full/2000,/0/default.jpg'
         metadata_url = 'https://collection.mndigital.org/catalog/' + collection + ':' + str(photo_id) + '.json'
 
         out_image = 'images/' + collection + photo_id + '.jpg'
     
     # umn archives    
     elif collection == 'p16022coll175':
-        full_url = 'https://cdm16022.contentdm.oclc.org/digital/iiif/p16022coll175/' + str(photo_id) + '/full/full/0/default.jpg'
+        full_url = 'https://cdm16022.contentdm.oclc.org/digital/iiif/p16022coll175/' + str(photo_id) + '/full/2000,/0/default.jpg'
         metadata_url = 'https://umedia.lib.umn.edu/item/p16022coll175:' + str(photo_id) + '.json'
 
         out_image = 'images/' + collection + photo_id + '.jpg'  
