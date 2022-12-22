@@ -1,0 +1,10 @@
+api_keys.txt
+api_keys_mastodon.txt
+bad_words.txt
+post_log.txt
+send_tweet.sh
+images/
+*.db
+*.pyc
+/__pycache__
+test*
