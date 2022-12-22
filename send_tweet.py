@@ -2,6 +2,7 @@ import subprocess
 import json
 from random import randint
 import tweepy
+from mastodon import Mastodon
 import datetime
 import sqlite3
 import requests
@@ -215,6 +216,13 @@ def create_send_post(collection, photo_id):
     auth.set_access_token(keys['access_token'], keys['access_token_secret'])
     api = tweepy.API(auth)
 
+    # connect to mastodon
+    mast_key = get_api_keys('api_keys_mastodon.txt')
+    mastodon = Mastodon(
+    access_token = mast_key['access_token_secret'],
+    api_base_url = 'https://botsin.space/'
+    )
+
     # images we'll be pulling
     if collection in ['nemhc', 'irrc', 'msn']:
         full_url = 'https://cdm16022.contentdm.oclc.org/digital/iiif/' + collection + '/' + str(photo_id) + '/full/2000,/0/default.jpg'
@@ -224,7 +232,7 @@ def create_send_post(collection, photo_id):
     
     # umn archives    
     elif collection == 'p16022coll175':
-        full_url = 'https://cdm16022.contentdm.oclc.org/digital/iiif/p16022coll175/' + str(photo_id) + '/full/2000,/0/default.jpg'
+        full_url = 'https://cdm16022.contentdm.oclc.org/digital/iiif/p16022coll175/' + str(photo_id) + '/full/2000,2000/0/default.jpg'
         metadata_url = 'https://umedia.lib.umn.edu/item/p16022coll175:' + str(photo_id) + '.json'
 
         out_image = 'images/' + collection + photo_id + '.jpg'  
@@ -284,16 +292,25 @@ def create_send_post(collection, photo_id):
         if dont_post == False:
             print('sending tweet')
             status = api.update_with_media(out_image, tweet1)
+
+            print('sending toot')
+            mast_media = mastodon.media_post(out_image)
+            toot = mastodon.status_post(tweet1, media_ids=mast_media)
            
             # add description in a reply if available
             if description != '':
                 descr_text = description_parts(description)
                 prev_id = status.id
+                prev_toot_id = toot.id
                 for d in descr_text:
                     reply = api.update_status(status=d, 
                                      in_reply_to_status_id=prev_id, 
                                      auto_populate_reply_metadata=True)
                     prev_id = reply.id
+
+                    # mastodon thread
+                    mast_reply = mastodon.status_post(status=d, in_reply_to_id=prev_toot_id)
+                    prev_toot_id = mast_reply.id
 
             return True
 
