@@ -262,14 +262,16 @@ def create_send_post(collection, photo_id):
             date = metadata['year']
         elif 'decade' in metadata_keys:
             date = metadata['decade']
-        else:
-            date = 'Unknown'
 
         # make main tweet
         tweet1 = title
-        tweet1 += '\nDate: ' + date
+
+        if 'year' in metadata_keys or 'decade' in metadata_keys:
+            tweet1 += '\nDate: ' + date
+
         if 'addres' in metadata_keys:
             tweet1 += '\nAddress: ' + metadata['addres'] 
+
         tweet1 += '\nSource: ' + metadata['permis']
         # trim long tweets
         tweet1 = tweet1[0:280]
