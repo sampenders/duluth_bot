@@ -294,8 +294,10 @@ def create_send_post(collection, photo_id):
         # post if non-offensive and there are permissions
         dont_post = bad_word_in_post(title, description, subject, 'bad_words.txt')
         if dont_post == False:
-            print('sending tweet')
-            status = api.update_with_media(out_image, tweet1)
+            
+            # don't tweet
+            # print('sending tweet')
+            # status = api.update_with_media(out_image, tweet1)
 
             print('sending toot')
             mast_media = mastodon.media_post(out_image)
@@ -304,13 +306,16 @@ def create_send_post(collection, photo_id):
             # add description in a reply if available
             if description != '':
                 descr_text = description_parts(description)
-                prev_id = status.id
+                
+                # don't tweet
+                # prev_id = status.id
                 prev_toot_id = toot.id
                 for d in descr_text:
-                    reply = api.update_status(status=d, 
-                                     in_reply_to_status_id=prev_id, 
-                                     auto_populate_reply_metadata=True)
-                    prev_id = reply.id
+                    # don't tweet
+                    # reply = api.update_status(status=d, 
+                    #                  in_reply_to_status_id=prev_id, 
+                    #                  auto_populate_reply_metadata=True)
+                    # prev_id = reply.id
 
                     # mastodon thread
                     mast_reply = mastodon.status_post(status=d, in_reply_to_id=prev_toot_id)
